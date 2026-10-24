@@ -31,7 +31,8 @@ class AuthController extends Controller
         if (Auth::attempt($data)) {
             $request->session()->regenerate();
 
-            return redirect()->route('pengaduan.create');
+            // Arahkan ke halaman awal sesuai role (admin, petugas, atau customer)
+            return redirect()->route(Auth::user()->halamanAwal());
         }
 
         return back()
@@ -62,8 +63,10 @@ class AuthController extends Controller
             'password.confirmed' => 'Konfirmasi password tidak sama.',
         ]);
 
+        // Registrasi mandiri selalu menjadi customer.
+        // Akun admin dan petugas hanya dibuat lewat seeder atau menu Data Petugas.
         // Password otomatis di-hash oleh model User (casts 'hashed')
-        User::create($data);
+        User::create($data + ['role' => User::ROLE_CUSTOMER]);
 
         return redirect()->route('login')->with('sukses', 'Registrasi berhasil, silakan login.');
     }

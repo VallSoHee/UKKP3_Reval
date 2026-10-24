@@ -12,6 +12,11 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    // Tiga role yang dikenal aplikasi
+    const ROLE_ADMIN    = 'admin';
+    const ROLE_PETUGAS  = 'petugas';
+    const ROLE_CUSTOMER = 'customer';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -21,6 +26,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -42,4 +48,36 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isPetugas(): bool
+    {
+        return $this->role === self::ROLE_PETUGAS;
+    }
+
+    public function isCustomer(): bool
+    {
+        return $this->role === self::ROLE_CUSTOMER;
+    }
+
+    // Nama rute halaman pertama setelah login, sesuai role.
+    // Awalan rute admin dan petugas sama dengan nama rolenya ('admin.' dan 'petugas.').
+    public function halamanAwal(): string
+    {
+        return match ($this->role) {
+            self::ROLE_ADMIN   => 'admin.pengaduan.index',
+            self::ROLE_PETUGAS => 'petugas.pengaduan.index',
+            default            => 'pengaduan.create',
+        };
+    }
+
+    // Nama role untuk ditampilkan, misalnya di sidebar
+    public function labelRole(): string
+    {
+        return ucfirst($this->role);
+    }
 }
